@@ -11,7 +11,7 @@
     <header class="hero">
       <h1>design generator</h1>
       <p>
-        Generate original design concepts and isolated artwork assets from any theme.
+        Generate cute, artsy, isolated design assets from any theme.
       </p>
     </header>
 
@@ -21,17 +21,34 @@
 
         <label>
           Theme
-          <input id="theme" type="text" value="nature" placeholder="nature, leftist, anti-trump, birds, surreal kitchen, etc." />
+          <input
+            id="theme"
+            type="text"
+            value="nature"
+            placeholder="nature, anti-trump, leftist, birds, surreal kitchen, labor rights, etc."
+          />
         </label>
 
         <label>
           Tone / Direction
-          <input id="tone" type="text" value="smart, original, visually cohesive, handmade" placeholder="satirical, painterly, textured, protest-poster, poetic, etc." />
+          <input
+            id="tone"
+            type="text"
+            value="cute, artsy, handmade, clever"
+            placeholder="cute, witty, handmade, protest-y, poetic, retro, etc."
+          />
         </label>
 
         <label>
-          Number of Variations
-          <input id="count" type="number" min="1" max="8" value="4" />
+          Design Style Mode
+          <select id="styleMode">
+            <option value="cute sticker graphic">cute sticker graphic</option>
+            <option value="artsy merch graphic">artsy merch graphic</option>
+            <option value="retro graphic print">retro graphic print</option>
+            <option value="protest poster graphic">protest poster graphic</option>
+            <option value="badge or emblem design">badge or emblem design</option>
+            <option value="hand-painted print asset">hand-painted print asset</option>
+          </select>
         </label>
 
         <label>
@@ -40,13 +57,15 @@
             <option value="square">square</option>
             <option value="portrait">portrait</option>
             <option value="landscape">landscape</option>
-            <option value="circle">circle</option>
-            <option value="oval">oval</option>
           </select>
         </label>
 
+        <label>
+          Number of Variations
+          <input id="count" type="number" min="1" max="6" value="4" />
+        </label>
+
         <button id="randomizeControlsBtn" type="button">Randomize Controls</button>
-        <button id="randomizeBtn" type="button">Generate Fresh Concepts</button>
         <button id="generateBtn" type="button">Generate New Variations</button>
       </section>
 
