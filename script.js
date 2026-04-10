@@ -54,6 +54,8 @@ const sloganFragmentsB = [
   "unbothered"
 ];
 
+let currentVariations = [];
+
 function randomItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -152,7 +154,8 @@ function generateVariations({ theme, vibe, designType, product, count }) {
       title,
       description,
       mainTag,
-      tags
+      tags,
+      imageUrl: null
     });
   }
 
@@ -163,13 +166,27 @@ function renderResults(items) {
   const resultsEl = document.getElementById("results");
   resultsEl.innerHTML = "";
 
-  items.forEach((item) => {
+  items.forEach((item, index) => {
     const card = document.createElement("article");
     card.className = "card";
 
     card.innerHTML = `
       <h3>Variation ${item.id}</h3>
       <div class="meta">${item.artStyle}</div>
+
+      <div class="button-row">
+        <button class="generate-design-btn" onclick="generateDesign(${index})">
+          Generate This Design
+        </button>
+      </div>
+
+      <div class="image-preview" id="image-preview-${index}">
+        ${
+          item.imageUrl
+            ? `<img src="${item.imageUrl}" alt="${item.title}" class="generated-image" />`
+            : `<div class="image-placeholder">No design generated yet</div>`
+        }
+      </div>
 
       <div class="block">
         <div class="block-title">Concept</div>
@@ -213,6 +230,40 @@ function renderResults(items) {
   });
 }
 
+async function generateDesign(index) {
+  const variation = currentVariations[index];
+  const preview = document.getElementById(`image-preview-${index}`);
+
+  preview.innerHTML = `<div class="image-placeholder">Generating design...</div>`;
+
+  try {
+    // THIS IS A PLACEHOLDER.
+    // Later this should call your backend/serverless function.
+    // Example:
+    // const response = await fetch("https://your-backend-url.com/generate-image", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     prompt: variation.artPrompt,
+    //     title: variation.title
+    //   })
+    // });
+    // const data = await response.json();
+    // variation.imageUrl = data.imageUrl;
+
+    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    preview.innerHTML = `
+      <div class="image-placeholder">
+        Button works — next we connect this to a real image API.
+      </div>
+    `;
+  } catch (error) {
+    preview.innerHTML = `<div class="image-placeholder">Something went wrong.</div>`;
+    console.error(error);
+  }
+}
+
 function runGenerator() {
   const theme = document.getElementById("theme").value.trim() || "retro kitchen";
   const vibe = document.getElementById("vibe").value.trim() || "witty feminine";
@@ -220,7 +271,7 @@ function runGenerator() {
   const product = document.getElementById("product").value;
   const count = Math.max(1, Math.min(12, Number(document.getElementById("count").value) || 4));
 
-  const variations = generateVariations({
+  currentVariations = generateVariations({
     theme,
     vibe,
     designType,
@@ -228,7 +279,7 @@ function runGenerator() {
     count
   });
 
-  renderResults(variations);
+  renderResults(currentVariations);
 }
 
 document.getElementById("generateBtn").addEventListener("click", runGenerator);
