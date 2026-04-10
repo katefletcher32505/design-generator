@@ -22,20 +22,41 @@
 
         <label>
           Theme
-          <input id="theme" type="text" value="retro kitchen" />
+          <select id="theme">
+            <option value="random">random theme</option>
+            <option value="retro kitchen">retro kitchen</option>
+            <option value="cowgirl western">cowgirl western</option>
+            <option value="birdwatching">birdwatching</option>
+            <option value="disco party">disco party</option>
+            <option value="romantic botanical">romantic botanical</option>
+            <option value="coastal grandmother">coastal grandmother</option>
+          </select>
         </label>
 
         <label>
           Vibe
-          <input id="vibe" type="text" value="witty feminine" />
+          <select id="vibe">
+            <option value="random">random vibe</option>
+            <option value="witty feminine">witty feminine</option>
+            <option value="earthy cozy">earthy cozy</option>
+            <option value="sardonic vintage">sardonic vintage</option>
+            <option value="hand-painted playful">hand-painted playful</option>
+            <option value="moody artsy">moody artsy</option>
+            <option value="maximalist whimsical">maximalist whimsical</option>
+            <option value="soft romantic">soft romantic</option>
+            <option value="quirky indie">quirky indie</option>
+            <option value="retro bold">retro bold</option>
+            <option value="charming weird">charming weird</option>
+          </select>
         </label>
 
         <label>
           Design Type
           <select id="designType">
+            <option value="random">random type</option>
             <option value="graphic">graphic only</option>
             <option value="slogan">slogan only</option>
-            <option value="graphic+slogan" selected>graphic + slogan</option>
+            <option value="graphic+slogan">graphic + slogan</option>
             <option value="pattern">pattern</option>
           </select>
         </label>
@@ -43,12 +64,13 @@
         <label>
           Product
           <select id="product">
-            <option>t-shirt</option>
-            <option>sticker</option>
-            <option>poster</option>
-            <option>pillow</option>
-            <option>journal</option>
-            <option>tote bag</option>
+            <option value="random">random product</option>
+            <option value="t-shirt">t-shirt</option>
+            <option value="sticker">sticker</option>
+            <option value="poster">poster</option>
+            <option value="pillow">pillow</option>
+            <option value="journal">journal</option>
+            <option value="tote bag">tote bag</option>
           </select>
         </label>
 
@@ -57,7 +79,8 @@
           <input id="count" type="number" min="1" max="12" value="4" />
         </label>
 
-        <button id="generateBtn">Generate New Variations</button>
+        <button id="randomizeBtn" type="button">Randomize All</button>
+        <button id="generateBtn" type="button">Generate New Variations</button>
       </section>
 
       <section class="panel results-panel">
