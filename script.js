@@ -237,29 +237,36 @@ async function generateDesign(index) {
   preview.innerHTML = `<div class="image-placeholder">Generating design...</div>`;
 
   try {
-    // THIS IS A PLACEHOLDER.
-    // Later this should call your backend/serverless function.
-    // Example:
-    // const response = await fetch("https://your-backend-url.com/generate-image", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     prompt: variation.artPrompt,
-    //     title: variation.title
-    //   })
-    // });
-    // const data = await response.json();
-    // variation.imageUrl = data.imageUrl;
+    const response = await fetch(
+      "https://design-generator-api.katefletcher32505.workers.dev/generate",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt: variation.artPrompt
+        })
+      }
+    );
 
-    await new Promise(resolve => setTimeout(resolve, 1200));
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText);
+    }
+
+    const blob = await response.blob();
+    const imageUrl = URL.createObjectURL(blob);
+
+    currentVariations[index].imageUrl = imageUrl;
 
     preview.innerHTML = `
-      <div class="image-placeholder">
-        Button works — next we connect this to a real image API.
-      </div>
+      <img src="${imageUrl}" alt="${variation.title}" class="generated-image" />
     `;
   } catch (error) {
-    preview.innerHTML = `<div class="image-placeholder">Something went wrong.</div>`;
+    preview.innerHTML = `
+      <div class="image-placeholder">Something went wrong while generating the image.</div>
+    `;
     console.error(error);
   }
 }
