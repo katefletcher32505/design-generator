@@ -411,11 +411,17 @@ function rememberConcept(conceptKey) {
 
 function resolveSelectedValue(selectId, optionsArray) {
   const value = document.getElementById(selectId).value;
-  return value === "random" ? randomItem(optionsArray) : value;
+  if (value === "random") return randomItem(optionsArray);
+  return value;
 }
 
 function generateOneVariation(theme, vibe, designType, product, id) {
   const bank = themeBanks[theme];
+
+  if (!bank) {
+    throw new Error(`No theme bank found for theme: ${theme}`);
+  }
+
   let attempts = 0;
   let conceptData;
 
@@ -647,6 +653,11 @@ async function generateDesign(index) {
 
   preview.innerHTML = `<div class="image-placeholder">Generating design...</div>`;
 
+  if (!variation.artPrompt || variation.artPrompt.trim() === "") {
+    preview.innerHTML = `<div class="image-placeholder">This variation has no valid art prompt yet.</div>`;
+    return;
+  }
+
   try {
     const response = await fetch(WORKER_URL, {
       method: "POST",
@@ -660,6 +671,7 @@ async function generateDesign(index) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error("Worker error:", errorText);
       throw new Error(errorText);
     }
 
@@ -697,12 +709,7 @@ function getCurrentSelections(randomizeAll = false) {
     document.getElementById("product").value = product;
   }
 
-  return {
-    theme,
-    vibe,
-    designType,
-    product
-  };
+  return { theme, vibe, designType, product };
 }
 
 function runGenerator(randomizeAll = false) {
