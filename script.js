@@ -96,6 +96,35 @@ function buildTags(theme, vibe, product, concept) {
   return cleaned.slice(0, 15);
 }
 
+function getFeedbackData() {
+  return JSON.parse(localStorage.getItem("designFeedback") || "[]");
+}
+
+function saveFeedbackData(data) {
+  localStorage.setItem("designFeedback", JSON.stringify(data));
+}
+
+function saveFeedback(type, variation) {
+  const feedback = getFeedbackData();
+
+  feedback.push({
+    type,
+    timestamp: new Date().toISOString(),
+    theme: document.getElementById("theme").value,
+    vibe: document.getElementById("vibe").value,
+    designType: document.getElementById("designType").value,
+    product: document.getElementById("product").value,
+    artStyle: variation.artStyle,
+    concept: variation.concept,
+    artPrompt: variation.artPrompt,
+    sloganPrompt: variation.sloganPrompt,
+    title: variation.title
+  });
+
+  saveFeedbackData(feedback);
+  renderTasteProfile();
+}
+
 function generateVariations({ theme, vibe, designType, product, count }) {
   const results = [];
 
@@ -188,6 +217,11 @@ function renderResults(items) {
         }
       </div>
 
+      <div class="feedback-row">
+        <button class="feedback-btn" onclick="likeVariation(${index})">👍 Like</button>
+        <button class="feedback-btn" onclick="dislikeVariation(${index})">👎 Dislike</button>
+      </div>
+
       <div class="block">
         <div class="block-title">Concept</div>
         <p>${item.concept}</p>
@@ -228,6 +262,31 @@ function renderResults(items) {
 
     resultsEl.appendChild(card);
   });
+}
+
+function likeVariation(index) {
+  saveFeedback("like", currentVariations[index]);
+  alert("Saved as liked.");
+}
+
+function dislikeVariation(index) {
+  saveFeedback("dislike", currentVariations[index]);
+  alert("Saved as disliked.");
+}
+
+function renderTasteProfile() {
+  const existing = document.getElementById("taste-profile");
+  if (!existing) return;
+
+  const feedback = getFeedbackData();
+  const likes = feedback.filter(item => item.type === "like").length;
+  const dislikes = feedback.filter(item => item.type === "dislike").length;
+
+  existing.innerHTML = `
+    <h3>taste profile</h3>
+    <p><strong>Liked:</strong> ${likes}</p>
+    <p><strong>Disliked:</strong> ${dislikes}</p>
+  `;
 }
 
 async function generateDesign(index) {
@@ -287,6 +346,7 @@ function runGenerator() {
   });
 
   renderResults(currentVariations);
+  renderTasteProfile();
 }
 
 document.getElementById("generateBtn").addEventListener("click", runGenerator);
