@@ -194,3 +194,45 @@ button:hover {
   border-radius: 16px;
   border: 1px solid #ddd;
 }
+.button-row {
+  margin-bottom: 14px;
+}
+
+.generate-design-btn {
+  width: auto;
+  min-width: 180px;
+  background: #1f1f1f;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.generate-design-btn:hover {
+  opacity: 0.92;
+}
+
+.image-preview {
+  margin-bottom: 18px;
+}
+
+.image-placeholder {
+  border: 1px dashed #cfcfcf;
+  border-radius: 16px;
+  padding: 32px 18px;
+  text-align: center;
+  color: #666;
+  background: #fafafa;
+  line-height: 1.5;
+}
+
+.generated-image {
+  width: 100%;
+  max-width: 500px;
+  display: block;
+  border-radius: 16px;
+  border: 1px solid #ddd;
+}
