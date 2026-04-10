@@ -1,5 +1,43 @@
 const WORKER_URL = "https://design-generator-api.katefletcher32505.workers.dev/generate";
 
+const themeOptions = [
+  "retro kitchen",
+  "cowgirl western",
+  "birdwatching",
+  "disco party",
+  "romantic botanical",
+  "coastal grandmother"
+];
+
+const vibeOptions = [
+  "witty feminine",
+  "earthy cozy",
+  "sardonic vintage",
+  "hand-painted playful",
+  "moody artsy",
+  "maximalist whimsical",
+  "soft romantic",
+  "quirky indie",
+  "retro bold",
+  "charming weird"
+];
+
+const designTypeOptions = [
+  "graphic",
+  "slogan",
+  "graphic+slogan",
+  "pattern"
+];
+
+const productOptions = [
+  "t-shirt",
+  "sticker",
+  "poster",
+  "pillow",
+  "journal",
+  "tote bag"
+];
+
 const artStyles = [
   "digitally hand-painted gouache",
   "procreate-style textured illustration",
@@ -208,38 +246,6 @@ const themeBanks = {
   }
 };
 
-const genericBank = {
-  subjects: [
-    "ceramic vase",
-    "vintage label",
-    "fruit bowl",
-    "window cat",
-    "decorative boots",
-    "martini glass",
-    "wildflower stem",
-    "teacup and saucer"
-  ],
-  motifs: [
-    "framed composition",
-    "decorative border",
-    "poster-style layout",
-    "soft label design",
-    "balanced centered composition"
-  ],
-  palettes: [
-    "cream, red, and blue",
-    "sage, blush, and ivory",
-    "brown, gold, and cream",
-    "soft blue, rust, and white"
-  ],
-  sloganStyles: [
-    "dry witty",
-    "soft ironic",
-    "pretty but strange",
-    "playful and self-aware"
-  ]
-};
-
 let currentVariations = [];
 let recentConceptKeys = [];
 
@@ -305,7 +311,6 @@ function weightedChoice(values, fieldName) {
   values.forEach(value => {
     const likes = countLikesFor(fieldName, value);
     const dislikes = countDislikesFor(fieldName, value);
-
     const weight = Math.max(1, 2 + likes * 3 - dislikes * 2);
 
     for (let i = 0; i < weight; i++) {
@@ -314,19 +319,6 @@ function weightedChoice(values, fieldName) {
   });
 
   return randomItem(weighted);
-}
-
-function resolveThemeBank(theme) {
-  const normalized = (theme || "").toLowerCase().trim();
-
-  for (const key of Object.keys(themeBanks)) {
-    if (normalized === key) return { key, bank: themeBanks[key] };
-    if (normalized.includes(key) || key.includes(normalized)) {
-      return { key, bank: themeBanks[key] };
-    }
-  }
-
-  return { key: normalized || "generic", bank: genericBank };
 }
 
 function buildTags(theme, vibe, product, concept, subject, artStyle) {
@@ -406,46 +398,39 @@ function generateSlogan(themeKey, subject, sloganStyle) {
   return "mood with a border";
 }
 
-function makeConcept(themeKey, bank, vibe, designType, product) {
-  const subject = weightedChoice(bank.subjects, "subject");
-  const motif = weightedChoice(bank.motifs, "motif");
-  const palette = weightedChoice(bank.palettes, "palette");
-  const sloganStyle = weightedChoice(bank.sloganStyles, "sloganStyle");
-  const artStyle = weightedChoice(artStyles, "artStyle");
-
-  const conceptKey = `${themeKey}|${subject}|${motif}|${artStyle}|${product}|${designType}`;
-
-  return {
-    subject,
-    motif,
-    palette,
-    sloganStyle,
-    artStyle,
-    conceptKey
-  };
-}
-
 function conceptAlreadyUsed(conceptKey) {
   return recentConceptKeys.includes(conceptKey);
 }
 
 function rememberConcept(conceptKey) {
   recentConceptKeys.push(conceptKey);
-  if (recentConceptKeys.length > 30) {
+  if (recentConceptKeys.length > 40) {
     recentConceptKeys.shift();
   }
 }
 
-function generateOneVariation(theme, vibe, designType, product, id) {
-  const { key: themeKey, bank } = resolveThemeBank(theme);
+function resolveSelectedValue(selectId, optionsArray) {
+  const value = document.getElementById(selectId).value;
+  return value === "random" ? randomItem(optionsArray) : value;
+}
 
-  let conceptData;
+function generateOneVariation(theme, vibe, designType, product, id) {
+  const bank = themeBanks[theme];
   let attempts = 0;
+  let conceptData;
 
   do {
-    conceptData = makeConcept(themeKey, bank, vibe, designType, product);
-    attempts += 1;
-  } while (conceptAlreadyUsed(conceptData.conceptKey) && attempts < 12);
+    conceptData = {
+      subject: weightedChoice(bank.subjects, "subject"),
+      motif: weightedChoice(bank.motifs, "motif"),
+      palette: weightedChoice(bank.palettes, "palette"),
+      sloganStyle: weightedChoice(bank.sloganStyles, "sloganStyle"),
+      artStyle: weightedChoice(artStyles, "artStyle")
+    };
+
+    conceptData.conceptKey = `${theme}|${conceptData.subject}|${conceptData.motif}|${conceptData.artStyle}|${product}|${designType}`;
+    attempts++;
+  } while (conceptAlreadyUsed(conceptData.conceptKey) && attempts < 15);
 
   rememberConcept(conceptData.conceptKey);
 
@@ -453,43 +438,36 @@ function generateOneVariation(theme, vibe, designType, product, id) {
 
   let concept = "";
   let artPrompt = "";
-  let sloganPrompt = "";
   let title = "";
   let description = "";
   let slogan = "";
 
   if (designType === "graphic") {
     concept = `${theme} ${subject}`;
-    slogan = "";
     artPrompt = `Create clean artwork only with no words, letters, or typography. Make a ${artStyle} ${product} design featuring ${subject}, inspired by ${theme}, with a ${vibe} mood. Use ${motif} and a palette of ${palette}. The composition should feel cohesive, visually balanced, and product-ready. Transparent or clean background preferred.`;
-    sloganPrompt = "No slogan needed.";
     title = `${theme} ${subject} ${product} design`;
     description = `A ${vibe} ${product} concept featuring ${subject}, rendered in a ${artStyle} style with ${motif} details and a palette of ${palette}.`;
   }
 
   if (designType === "slogan") {
-    slogan = generateSlogan(themeKey, subject, sloganStyle);
+    slogan = generateSlogan(theme, subject, sloganStyle);
     concept = `${theme} slogan concept`;
     artPrompt = `Create clean decorative background artwork only with no readable text or lettering. Make a subtle ${artStyle} ${product} composition inspired by ${theme}, with a ${vibe} mood, using ${motif} and a palette of ${palette}. Leave the design visually simple enough that text could be added later outside the image.`;
-    sloganPrompt = slogan;
     title = `${theme} slogan ${product}`;
     description = `A text-forward ${product} concept inspired by ${theme}, paired with decorative artwork in a ${artStyle} style.`;
   }
 
   if (designType === "graphic+slogan") {
-    slogan = generateSlogan(themeKey, subject, sloganStyle);
+    slogan = generateSlogan(theme, subject, sloganStyle);
     concept = `${theme} ${subject} with slogan`;
     artPrompt = `Create clean artwork only with no words, letters, or typography. Make a ${artStyle} ${product} design featuring ${subject}, inspired by ${theme}, with a ${vibe} mood. Use ${motif} and a palette of ${palette}. The image should feel cohesive and strong on its own, with space that would allow text to be added later outside the generated image.`;
-    sloganPrompt = slogan;
     title = `${theme} ${subject} slogan ${product}`;
     description = `A ${vibe} ${product} design built around ${subject}, rendered in a ${artStyle} style with ${motif} details and matched with a ${sloganStyle} slogan.`;
   }
 
   if (designType === "pattern") {
-    slogan = "";
     concept = `${theme} repeating pattern`;
     artPrompt = `Create a seamless repeating pattern with no words, letters, or typography. Use ${subject} as the hero motif, inspired by ${theme}, with a ${vibe} mood. Include ${motif} details and a palette of ${palette}. The result should feel polished, balanced, and suitable for surface design on ${product}.`;
-    sloganPrompt = "No slogan needed.";
     title = `${theme} repeating pattern`;
     description = `A seamless surface pattern inspired by ${theme}, featuring ${subject} in a ${artStyle} style with ${motif} details and a palette of ${palette}.`;
   }
@@ -510,7 +488,6 @@ function generateOneVariation(theme, vibe, designType, product, id) {
     artStyle,
     concept,
     artPrompt,
-    sloganPrompt,
     slogan,
     title,
     description,
@@ -559,6 +536,11 @@ function renderResults(items) {
       <div class="feedback-row">
         <button class="feedback-btn" onclick="likeVariation(${index})">👍 Like</button>
         <button class="feedback-btn" onclick="dislikeVariation(${index})">👎 Dislike</button>
+      </div>
+
+      <div class="block">
+        <div class="block-title">Theme</div>
+        <p>${item.theme}</p>
       </div>
 
       <div class="block">
@@ -697,18 +679,41 @@ async function generateDesign(index) {
   }
 }
 
-function runGenerator() {
-  const theme = document.getElementById("theme").value.trim() || "retro kitchen";
-  const vibe = document.getElementById("vibe").value.trim() || "witty feminine";
-  const designType = document.getElementById("designType").value;
-  const product = document.getElementById("product").value;
-  const count = Math.max(1, Math.min(12, Number(document.getElementById("count").value) || 4));
+function getCurrentSelections(randomizeAll = false) {
+  let theme = resolveSelectedValue("theme", themeOptions);
+  let vibe = resolveSelectedValue("vibe", vibeOptions);
+  let designType = resolveSelectedValue("designType", designTypeOptions);
+  let product = resolveSelectedValue("product", productOptions);
 
-  currentVariations = generateVariations({
+  if (randomizeAll) {
+    theme = randomItem(themeOptions);
+    vibe = randomItem(vibeOptions);
+    designType = randomItem(designTypeOptions);
+    product = randomItem(productOptions);
+
+    document.getElementById("theme").value = theme;
+    document.getElementById("vibe").value = vibe;
+    document.getElementById("designType").value = designType;
+    document.getElementById("product").value = product;
+  }
+
+  return {
     theme,
     vibe,
     designType,
-    product,
+    product
+  };
+}
+
+function runGenerator(randomizeAll = false) {
+  const selected = getCurrentSelections(randomizeAll);
+  const count = Math.max(1, Math.min(12, Number(document.getElementById("count").value) || 4));
+
+  currentVariations = generateVariations({
+    theme: selected.theme,
+    vibe: selected.vibe,
+    designType: selected.designType,
+    product: selected.product,
     count
   });
 
@@ -716,6 +721,7 @@ function runGenerator() {
   renderTasteProfile();
 }
 
-document.getElementById("generateBtn").addEventListener("click", runGenerator);
+document.getElementById("generateBtn").addEventListener("click", () => runGenerator(false));
+document.getElementById("randomizeBtn").addEventListener("click", () => runGenerator(true));
 
-runGenerator();
+runGenerator(false);
