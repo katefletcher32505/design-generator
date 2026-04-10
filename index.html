@@ -21,12 +21,12 @@
 
         <label>
           Theme
-          <input id="theme" type="text" value="nature" placeholder="nature, leftist, anti-trump, labor, birds, surreal kitchen, etc." />
+          <input id="theme" type="text" value="nature" placeholder="nature, leftist, anti-trump, birds, surreal kitchen, etc." />
         </label>
 
         <label>
           Tone / Direction
-          <input id="tone" type="text" value="smart, original, visually cohesive" placeholder="satirical, hand-painted, protest-poster energy, poetic, etc." />
+          <input id="tone" type="text" value="smart, original, visually cohesive, handmade" placeholder="satirical, painterly, textured, protest-poster, poetic, etc." />
         </label>
 
         <label>
@@ -34,6 +34,18 @@
           <input id="count" type="number" min="1" max="8" value="4" />
         </label>
 
+        <label>
+          Canvas Format
+          <select id="canvasFormat">
+            <option value="square">square</option>
+            <option value="portrait">portrait</option>
+            <option value="landscape">landscape</option>
+            <option value="circle">circle</option>
+            <option value="oval">oval</option>
+          </select>
+        </label>
+
+        <button id="randomizeControlsBtn" type="button">Randomize Controls</button>
         <button id="randomizeBtn" type="button">Generate Fresh Concepts</button>
         <button id="generateBtn" type="button">Generate New Variations</button>
       </section>
