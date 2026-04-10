@@ -5,9 +5,14 @@ let currentVariations = [];
 const randomThemes = [
   "nature",
   "birdwatching",
+  "cute birds",
+  "wildflowers",
   "forest folklore",
-  "wildflowers and grief",
-  "southern gothic nature",
+  "romantic botanical",
+  "surreal kitchen",
+  "weird vintage domestic",
+  "coastal nostalgia",
+  "cowgirl western",
   "climate justice",
   "leftist",
   "anti-trump",
@@ -15,31 +20,36 @@ const randomThemes = [
   "workers rights",
   "political satire",
   "protest symbolism",
-  "romantic botanical",
-  "surreal kitchen",
-  "weird vintage domestic",
-  "cowgirl western",
-  "coastal nostalgia",
-  "ecological grief",
   "feminine rage",
   "working class surrealism"
 ];
 
 const randomTones = [
-  "smart, original, visually cohesive, handmade",
-  "hand-painted, textured, imperfect, artistic",
-  "painterly, tactile, soft edges, human-made",
-  "satirical, sharp, poster-like, bold",
-  "poetic, strange, intimate, handmade",
-  "dry, witty, graphic, screenprint-inspired",
-  "earthy, collage-like, tactile, illustrative",
-  "vintage, whimsical, textured, imperfect",
-  "sardonic, layered, political, visually bold",
-  "folk-art inspired, painterly, warm, handmade"
+  "cute, artsy, handmade, clever",
+  "hand-drawn, textured, playful, charming",
+  "painterly, tactile, imperfect, warm",
+  "witty, graphic, merchandise-friendly, clean",
+  "retro, artsy, soft-edged, human-made",
+  "bold, satirical, poster-like, not cheesy",
+  "sweet but strange, cute, illustrated",
+  "procreate-like, sticker-friendly, flat-ish, textured"
 ];
 
-const randomCounts = [2, 3, 4, 5, 6];
-const randomCanvasFormats = ["square", "portrait", "landscape", "circle", "oval"];
+const randomStyleModes = [
+  "cute sticker graphic",
+  "artsy merch graphic",
+  "retro graphic print",
+  "protest poster graphic",
+  "badge or emblem design",
+  "hand-painted print asset"
+];
+
+const randomCanvasFormats = ["square", "portrait", "landscape"];
+const randomCounts = [2, 3, 4, 5];
+
+function randomItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 function getFeedbackData() {
   return JSON.parse(localStorage.getItem("designFeedback") || "[]");
@@ -47,10 +57,6 @@ function getFeedbackData() {
 
 function saveFeedbackData(data) {
   localStorage.setItem("designFeedback", JSON.stringify(data));
-}
-
-function randomItem(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function saveFeedback(type, variation) {
@@ -61,13 +67,14 @@ function saveFeedback(type, variation) {
     timestamp: new Date().toISOString(),
     theme: variation.theme,
     tone: variation.tone,
+    styleMode: variation.styleMode,
+    canvasFormat: variation.canvasFormat,
     concept: variation.concept,
     slogan: variation.slogan,
     artStyle: variation.artStyle,
     palette: variation.palette,
     composition: variation.composition,
-    imagePrompt: variation.imagePrompt,
-    canvasFormat: variation.canvasFormat
+    imagePrompt: variation.imagePrompt
   });
 
   saveFeedbackData(feedback);
@@ -94,6 +101,7 @@ function getLikedTraits() {
       artStyle: item.artStyle,
       palette: item.palette,
       composition: item.composition,
+      styleMode: item.styleMode,
       canvasFormat: item.canvasFormat
     }));
 }
@@ -108,6 +116,7 @@ function getDislikedTraits() {
       artStyle: item.artStyle,
       palette: item.palette,
       composition: item.composition,
+      styleMode: item.styleMode,
       canvasFormat: item.canvasFormat
     }));
 }
@@ -124,7 +133,7 @@ function renderTasteProfile() {
     <h3>taste profile</h3>
     <p><strong>Liked:</strong> ${likes}</p>
     <p><strong>Disliked:</strong> ${dislikes}</p>
-    <p>Your future generations will gradually reflect this feedback more.</p>
+    <p>This will gradually influence future ideas.</p>
   `;
 }
 
@@ -144,25 +153,39 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
 
 function buildFormatInstruction(canvasFormat) {
   if (canvasFormat === "square") {
-    return "Compose the design to fit cleanly inside a square canvas with balanced spacing on all sides.";
+    return "Compose the design cleanly inside a square canvas with strong balance and even spacing.";
   }
   if (canvasFormat === "portrait") {
-    return "Compose the design vertically for a portrait canvas, with strong top-to-bottom balance.";
+    return "Compose the design vertically for a portrait canvas with strong top-to-bottom balance.";
   }
   if (canvasFormat === "landscape") {
-    return "Compose the design horizontally for a landscape canvas, with a wide balanced layout.";
-  }
-  if (canvasFormat === "circle") {
-    return "Compose the design so the important artwork stays centered and fits safely inside a circular boundary.";
-  }
-  if (canvasFormat === "oval") {
-    return "Compose the design so the important artwork stays centered and fits safely inside an oval boundary, leaving breathing room at the edges.";
+    return "Compose the design horizontally for a landscape canvas with a wide balanced layout.";
   }
   return "Compose the design in a clean balanced way.";
 }
 
-async function generateConcept(theme, tone, canvasFormat) {
-  const strongerTone = `${tone}, handmade, textured, painterly, imperfect edges, visible brush texture, drawn feel, tactile, human-made, avoid glossy 3D rendering, avoid stock-vector look, avoid generic AI sheen`;
+async function generateConcept(theme, tone, styleMode, canvasFormat) {
+  const strongerTone = `
+${tone},
+${styleMode},
+cute artsy graphic design,
+merchandise-friendly,
+sticker-friendly,
+handmade,
+textured,
+painterly,
+imperfect,
+playful,
+clean silhouette,
+usable as isolated design asset,
+not a scenic illustration,
+not cinematic concept art,
+not fantasy wallpaper,
+not a realistic environment,
+not glossy,
+not plastic,
+not stock-vector corporate style
+  `.trim();
 
   const response = await fetchWithTimeout(`${WORKER_BASE}/concept`, {
     method: "POST",
@@ -172,9 +195,10 @@ async function generateConcept(theme, tone, canvasFormat) {
     body: JSON.stringify({
       theme,
       tone: strongerTone,
+      styleMode,
+      canvasFormat,
       likes: getLikedTraits(),
-      dislikes: getDislikedTraits(),
-      canvasFormat
+      dislikes: getDislikedTraits()
     })
   }, 30000);
 
@@ -188,10 +212,38 @@ async function generateConcept(theme, tone, canvasFormat) {
 
   concept.imagePrompt = `
 ${concept.imagePrompt || ""}
-Style emphasis: handmade-looking, textured, painterly, imperfect edges, tactile illustration, visible brush or drawing texture, procreate-like or hand-rendered feel, not glossy, not plastic, not vector-clean, not mockup-like.
-Format constraint: ${formatInstruction}
-Final output rules: isolated design only, no mockup, no product photo, no shirt or poster preview, no readable text, no gibberish text, plain or transparent background.
-`.trim();
+
+Visual direction:
+cute artsy graphic design asset,
+sticker-style or merch-style illustration,
+hand-drawn feel,
+procreate-like,
+textured but clean,
+bold readable silhouette,
+centered composition,
+simple graphic asset,
+not a full scene,
+not a landscape painting,
+not fantasy forest wallpaper,
+not cinematic environment art.
+
+Shape rules:
+${formatInstruction}
+
+Final output rules:
+isolated design only,
+plain or transparent background,
+no mockup,
+no product photo,
+no poster-on-wall preview,
+no realistic photography,
+no glossy 3D rendering,
+no stock-vector corporate style,
+no readable text,
+no gibberish text,
+keep important elements fully inside the chosen format,
+make it look usable for stickers, shirts, totes, or prints.
+  `.trim();
 
   return concept;
 }
@@ -201,20 +253,22 @@ async function generateVariationsFromAI() {
   resultsEl.innerHTML = `<div class="card"><p>Generating fresh concepts...</p></div>`;
 
   const theme = document.getElementById("theme").value.trim() || "nature";
-  const tone = document.getElementById("tone").value.trim() || "smart, original, visually cohesive, handmade";
-  const count = Math.max(1, Math.min(8, Number(document.getElementById("count").value) || 4));
+  const tone = document.getElementById("tone").value.trim() || "cute, artsy, handmade, clever";
+  const styleMode = document.getElementById("styleMode").value;
   const canvasFormat = document.getElementById("canvasFormat").value;
+  const count = Math.max(1, Math.min(6, Number(document.getElementById("count").value) || 4));
 
   try {
     const concepts = [];
 
     for (let i = 0; i < count; i++) {
-      const concept = await generateConcept(theme, tone, canvasFormat);
+      const concept = await generateConcept(theme, tone, styleMode, canvasFormat);
 
       concepts.push({
         id: i + 1,
         theme,
         tone,
+        styleMode,
         canvasFormat,
         concept: concept.concept || "",
         slogan: concept.slogan || "",
@@ -275,6 +329,11 @@ function renderResults(items) {
       <div class="block">
         <div class="block-title">Theme</div>
         <p>${item.theme}</p>
+      </div>
+
+      <div class="block">
+        <div class="block-title">Style Mode</div>
+        <p>${item.styleMode}</p>
       </div>
 
       <div class="block">
@@ -363,12 +422,12 @@ async function generateDesign(index) {
 function randomizeControls() {
   document.getElementById("theme").value = randomItem(randomThemes);
   document.getElementById("tone").value = randomItem(randomTones);
+  document.getElementById("styleMode").value = randomItem(randomStyleModes);
   document.getElementById("count").value = randomItem(randomCounts);
   document.getElementById("canvasFormat").value = randomItem(randomCanvasFormats);
 }
 
 document.getElementById("randomizeControlsBtn").addEventListener("click", randomizeControls);
 document.getElementById("generateBtn").addEventListener("click", generateVariationsFromAI);
-document.getElementById("randomizeBtn").addEventListener("click", generateVariationsFromAI);
 
 renderTasteProfile();
